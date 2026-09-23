@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cell Quest - Grade 6 Science</title>
+<style>
+:root{--ink:#17324d;--bg:#f5f7ff;--card:#fff;--accent:#6c5ce7;--good:#18a66b;--bad:#e85d75;--yellow:#ffd166}
+*{box-sizing:border-box} body{margin:0;font-family:Arial,Helvetica,sans-serif;background:linear-gradient(135deg,#eef7ff,#fff4fb);color:var(--ink)}
+#app{max-width:1000px;margin:auto;padding:22px}
+header{background:linear-gradient(135deg,#6c5ce7,#00b8d9);color:#fff;border-radius:28px;padding:26px;text-align:center;box-shadow:0 10px 25px #0001}
+header h1{font-size:clamp(32px,6vw,58px);margin:0 0 8px;font-weight:900} header p{font-size:20px;margin:0}
+.badge{display:inline-block;background:#ffffff33;padding:8px 14px;border-radius:999px;font-weight:700;margin-bottom:10px}
+.panel{background:var(--card);border-radius:24px;padding:22px;margin-top:18px;box-shadow:0 8px 25px #26334d12}
+#startScreen{text-align:center}
+.cell-art{display:flex;justify-content:center;gap:28px;flex-wrap:wrap;margin:18px 0}
+.cell{width:170px;height:125px;border-radius:50%;position:relative;display:flex;align-items:center;justify-content:center;font-weight:900;color:#17324d;border:6px solid #17324d22}
+.animal{background:#ffd6e7}.plant{background:#c9f7c5;border-radius:25px;border:10px solid #4caf50}
+.nucleus{width:48px;height:48px;border-radius:50%;background:#9b6cff;border:4px solid #5435a8}
+.mito{width:30px;height:16px;border-radius:50%;background:#ff9f43;position:absolute;transform:rotate(20deg)}
+.chloro{width:30px;height:16px;border-radius:50%;background:#2eae68;position:absolute}
+button{border:0;border-radius:16px;padding:15px 22px;font-size:18px;font-weight:800;cursor:pointer;transition:.15s;min-height:52px}
+button:hover{transform:translateY(-2px)} .primary{background:var(--accent);color:white}.secondary{background:#e9edff;color:#3d3a8f}
+#game{display:none}.toprow{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap}
+.progress{height:14px;background:#e8ebf3;border-radius:99px;overflow:hidden;margin:14px 0}.bar{height:100%;background:linear-gradient(90deg,#6c5ce7,#00b8d9);width:0}
+.category{font-weight:900;color:#6c5ce7;text-transform:uppercase;letter-spacing:1px;font-size:14px}
+.question{font-size:clamp(25px,4vw,38px);line-height:1.18;font-weight:900;margin:12px 0 22px}
+.options{display:grid;grid-template-columns:1fr 1fr;gap:14px}.option{text-align:left;background:#f7f8ff;border:3px solid #e4e7f5;color:var(--ink);font-size:19px}.option.correct{background:#dff8ec;border-color:var(--good)}.option.wrong{background:#ffe4e8;border-color:var(--bad)}
+.feedback{min-height:35px;margin-top:15px;font-size:20px;font-weight:800}.next{display:none;margin-top:10px}
+.result{text-align:center}.score{font-size:64px;font-weight:900;color:#6c5ce7}.review{text-align:left;margin-top:20px}
+.review div{padding:12px;border-radius:12px;background:#f6f7fb;margin:8px 0}.small{font-size:15px;color:#667085}
+@media(max-width:650px){.options{grid-template-columns:1fr}.cell{width:145px;height:105px}}
+</style>
+</head>
+<body>
+<div id="app">
+<header>
+<div class="badge">GRADE 6 • SCIENCE</div>
+<h1>🧬 CELL QUEST</h1>
+<p>Explore the cell • Choose the answer • Build your score!</p>
+</header>
+
+<section id="startScreen" class="panel">
+<h2 style="font-size:30px">Ready, Scientist? 🔬</h2>
+<div class="cell-art">
+<div class="cell animal">ANIMAL <span class="nucleus"></span><i class="mito" style="left:25px;top:25px"></i><i class="mito" style="right:25px;bottom:25px"></i></div>
+<div class="cell plant">PLANT <span class="nucleus"></span><i class="chloro" style="left:22px;top:28px"></i><i class="chloro" style="right:22px;bottom:28px"></i></div>
+</div>
+<p style="font-size:20px;line-height:1.5">Questions cover cell organelles, plant vs. animal cells, nucleus & DNA, vacuoles, and a short section on cell division.</p>
+<button class="primary" id="startBtn">START GAME 🚀</button>
+</section>
+
+<section id="game" class="panel">
+<div class="toprow"><span id="counter"></span><strong id="scoreLabel">Score: 0</strong></div>
+<div class="progress"><div id="bar" class="bar"></div></div>
+<div class="category" id="category"></div>
+<div class="question" id="question"></div>
+<div class="options" id="options"></div>
+<div class="feedback" id="feedback" aria-live="polite"></div>
+<button id="nextBtn" class="primary next">NEXT QUESTION ➜</button>
+</section>
+
+<section id="result" class="panel result" style="display:none">
+<h2 style="font-size:34px">🎉 Mission Complete!</h2>
+<div class="score" id="finalScore"></div>
+<p id="message" style="font-size:22px;font-weight:800"></p>
+<div class="review" id="review"></div>
+<button class="primary" id="restartBtn">PLAY AGAIN 🔄</button>
+</section>
+</div>
+
+<script>
+const questions=[
+{c:"Cell Parts",q:"Which part of the cell controls many of the cell’s activities?",a:["Cell wall","Nucleus","Cytoplasm","Vacuole"],x:1,e:"The nucleus controls cell activities and contains DNA."},
+{c:"Nucleus & DNA",q:"What important genetic material is found inside the nucleus?",a:["Water","DNA","Cell wall","Chlorophyll"],x:1,e:"DNA contains instructions used by cells."},
+{c:"Cell Parts",q:"What is the jelly-like substance where many cell activities happen?",a:["Cytoplasm","Nucleus","Cell wall","Chloroplast"],x:0,e:"The cytoplasm is the jelly-like material inside the cell."},
+{c:"Cell Parts",q:"What controls what enters and leaves the cell?",a:["Cell membrane","Mitochondrion","Nucleus","Chloroplast"],x:0,e:"The cell membrane controls movement of substances into and out of the cell."},
+{c:"Cell Parts",q:"Which structure gives a plant cell extra support and shape?",a:["Cell wall","Nucleus","Cytoplasm","Vacuole"],x:0,e:"The cell wall provides support and helps maintain shape."},
+{c:"Cell Parts",q:"Which organelle releases energy from food for the cell?",a:["Chloroplast","Mitochondrion","Vacuole","Nucleus"],x:1,e:"Mitochondria help release usable energy from food."},
+{c:"Plant Cells",q:"Which organelle carries out photosynthesis in plant cells?",a:["Mitochondrion","Nucleus","Chloroplast","Cell membrane"],x:2,e:"Chloroplasts contain chlorophyll and are the site of photosynthesis."},
+{c:"Vacuoles",q:"In a typical plant cell, the large central vacuole mainly stores...",a:["Water and other substances","DNA","Chlorophyll only","Energy only"],x:0,e:"Plant cells usually have a large central vacuole that stores water and other materials."},
+{c:"Plant vs Animal",q:"Which structure is found in plant cells but not typical animal cells?",a:["Nucleus","Cell membrane","Chloroplast","Cytoplasm"],x:2,e:"Chloroplasts are characteristic of plant cells."},
+{c:"Plant vs Animal",q:"Which structure is present in both plant and animal cells?",a:["Cell wall","Chloroplast","Nucleus","Large central vacuole"],x:2,e:"Both plant and animal cells have a nucleus."},
+{c:"Plant vs Animal",q:"Which statement best describes an animal cell?",a:["It has a cell wall and chloroplasts","It has no cell membrane","It has a cell membrane but no cell wall or chloroplasts","It has no nucleus"],x:2,e:"Typical animal cells have a membrane and nucleus, but no cell wall or chloroplasts."},
+{c:"Plant vs Animal",q:"Which feature helps many plant cells keep a more fixed shape?",a:["Cell wall","DNA","Mitochondria","Cytoplasm"],x:0,e:"The cell wall provides structural support."},
+{c:"Cell Parts",q:"Which part acts like the boundary around the cell?",a:["Cell membrane","Nucleus","Chloroplast","Vacuole"],x:0,e:"The cell membrane forms the cell’s boundary and controls transport."},
+{c:"Cell Parts",q:"Which organelle is especially important for photosynthesis?",a:["Chloroplast","Mitochondrion","Nucleus","Vacuole"],x:0,e:"Chloroplasts capture light energy for photosynthesis."},
+{c:"Nucleus & DNA",q:"Which statement about DNA is correct?",a:["DNA is the cell wall","DNA carries genetic instructions","DNA is only found outside cells","DNA makes the cell membrane"],x:1,e:"DNA carries genetic information and instructions for making proteins."},
+{c:"Cell Division",q:"Why do cells divide?",a:["To make cells larger forever","For growth, repair, and making new cells","To remove the cell membrane","To destroy DNA"],x:1,e:"Cell division helps organisms grow, repair tissues, and make new cells."},
+{c:"Cell Division",q:"Before a cell divides, what happens to its DNA?",a:["It disappears","It is copied","It leaves the cell","It becomes a cell wall"],x:1,e:"DNA is copied so new cells can receive genetic information."},
+{c:"Cell Division",q:"Cell division produces...",a:["New cells","Only DNA","Only water","Only chloroplasts"],x:0,e:"Cell division produces new cells."},
+{c:"Eukaryote vs Prokaryote",q:"Which type of cell has a nucleus surrounded by a nuclear membrane?",a:["Eukaryotic cell","Prokaryotic cell","Neither","Only plant cells"],x:0,e:"Eukaryotic cells have a membrane-bound nucleus."},
+{c:"Eukaryote vs Prokaryote",q:"Which type of cell does NOT have a membrane-bound nucleus?",a:["Eukaryotic cell","Prokaryotic cell","Plant cell only","Animal cell only"],x:1,e:"Prokaryotic cells do not have a membrane-bound nucleus."},
+{c:"Eukaryote vs Prokaryote",q:"Which is an example of a prokaryotic organism?",a:["Bacterium","Human","Oak tree","Cat"],x:0,e:"Bacteria are prokaryotes."},
+{c:"Eukaryote vs Prokaryote",q:"Which statement is correct?",a:["All cells have a membrane-bound nucleus","Eukaryotes have a nucleus; prokaryotes do not","Prokaryotes always have chloroplasts","Only animal cells have DNA"],x:1,e:"Eukaryotic cells have a membrane-bound nucleus, while prokaryotic cells do not."},
+{c:"Eukaryote vs Prokaryote",q:"Where is DNA found in a typical prokaryotic cell?",a:["Inside a membrane-bound nucleus","In the cell region called the nucleoid","Only inside mitochondria","Inside chloroplasts"],x:1,e:"Prokaryotes do not have a membrane-bound nucleus; their main DNA is located in the nucleoid region."},
+{c:"Eukaryote vs Prokaryote",q:"Plant and animal cells are both examples of...",a:["Prokaryotic cells","Eukaryotic cells","Bacteria","Cells without DNA"],x:1,e:"Plant and animal cells are eukaryotic because they have a membrane-bound nucleus."},
+{c:"Challenge",q:"A cell has a cell wall, chloroplasts, and a large central vacuole. What type of cell is it?",a:["Animal cell","Plant cell","Neither","Red blood cell"],x:1,e:"Those three features are characteristic of a typical plant cell."},
+{c:"Challenge",q:"A student says: “The nucleus is important because it contains DNA.” Is the statement...",a:["Correct","Incorrect","Only true for cell walls","Only true for vacuoles"],x:0,e:"Correct — the nucleus contains DNA in eukaryotic cells."}
+];
+let i=0,score=0,answered=false,results=[];
+const $=id=>document.getElementById(id);
+function start(){i=0;score=0;results=[];$("startScreen").style.display="none";$("result").style.display="none";$("game").style.display="block";show();}
+function show(){
+ answered=false; const q=questions[i]; $("counter").textContent=`Question ${i+1} of ${questions.length}`;$("scoreLabel").textContent=`Score: ${score}`;$("bar").style.width=((i)/questions.length*100)+"%";$("category").textContent=q.c;$("question").textContent=q.q;$("feedback").textContent="";$("nextBtn").style.display="none";
+ const box=$("options");box.innerHTML="";
+ q.a.forEach((t,n)=>{let b=document.createElement("button");b.className="option";b.textContent=String.fromCharCode(65+n)+". "+t;b.addEventListener("click",()=>choose(n,b));box.appendChild(b);});
+}
+function choose(n,btn){
+ if(answered)return;answered=true;const q=questions[i];const all=[...$("options").children];all.forEach((b,k)=>{b.disabled=true;if(k===q.x)b.classList.add("correct")});if(n!==q.x){btn.classList.add("wrong");$("feedback").textContent="❌ Not quite. "+q.e;}else{score+=10;$("feedback").textContent="✅ Correct! +10 points. "+q.e}
+ $("scoreLabel").textContent=`Score: ${score}`;results.push({q:q.q,ok:n===q.x,answer:q.a[q.x]});$("nextBtn").style.display="inline-block";
+}
+function next(){i++; if(i<questions.length)show();else finish();}
+function finish(){$("game").style.display="none";$("result").style.display="block";$("finalScore").textContent=`${score} / ${questions.length*10}`;let pct=score/questions.length; $("message").textContent=pct>=.85?"Cell Expert! 🧬":pct>=.65?"Great Science Work! 🔬":"Keep practicing — you’re getting there! 🌱";$("bar").style.width="100%";$("review").innerHTML="<h3>Quick Review</h3>"+results.map((r,n)=>`<div>${r.ok?"✅":"❌"} <b>${n+1}.</b> ${r.q}<br><span class="small">Correct answer: ${r.answer}</span></div>`).join("");}
+$("startBtn").addEventListener("click",start);$("nextBtn").addEventListener("click",next);$("restartBtn").addEventListener("click",start);
+</script>
+</body>
+</html>
